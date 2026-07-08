@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 protocol ServiceProvider {
     var mediaService: MediaPlayerService { get }

@@ -71,17 +71,20 @@ enum AppConstants {
 }
 
 enum ColorPalette {
-    static let background = NSColor(named: "PanelBackground") ?? NSColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1)
+    static let background = NSColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1)
     static let backgroundDark = NSColor(red: 0.15, green: 0.15, blue: 0.16, alpha: 1)
-    static let text = NSColor.label
-    static let secondaryText = NSColor.secondaryLabel
+    static let textPrimary = NSColor.textColor
+    static let textSecondary = NSColor.secondaryLabelColor
     static let accent = NSColor(red: 0.0, green: 0.478, blue: 1.0, alpha: 1)
     static let border = NSColor.separatorColor
 }
 
 enum SystemConfiguration {
     static var isDarkMode: Bool {
-        NSAppearance.current.bestMatch(from: [.darkAqua, .lightAqua]) == .darkAqua
+        if let appearance = NSAppearance.current {
+            return appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        }
+        return false
     }
 
     static var hasNotch: Bool {

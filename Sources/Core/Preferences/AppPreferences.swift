@@ -62,10 +62,6 @@ struct KeyCombo: Codable {
     }
 }
 
-enum Activity: String, Codable, Hashable, CaseIterable {
-    case media, calendar, fileTray, bluetooth
-}
-
 enum Theme: String, Codable {
     case light, dark, auto
 }

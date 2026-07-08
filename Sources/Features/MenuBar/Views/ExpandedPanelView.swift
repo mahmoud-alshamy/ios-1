@@ -56,8 +56,3 @@ struct ExpandedPanelView: View {
         .background(Color(nsColor: NSColor.controlBackgroundColor))
     }
 }
-
-#Preview {
-    ExpandedPanelView()
-        .environment(\.serviceProvider, DefaultServiceProvider())
-}

@@ -13,12 +13,23 @@ class DarkModeListener {
     }
 
     deinit {
-        if let token = token { DistributedNotificationCenter.default().removeObserver(token) }
+        if let token = token {
+            DistributedNotificationCenter.default().removeObserver(token)
+        }
     }
 
     private func setupListener() {
+        // Listen for appearance changes via NSApplication notification
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeOcclusionStateNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateDarkMode()
+        }
+
         token = DistributedNotificationCenter.default().addObserver(
-            forName: NSAppearance.didChangeNotification,
+            forName: NSNotification.Name("AppleInterfaceThemeChangedNotification"),
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -27,7 +38,11 @@ class DarkModeListener {
     }
 
     private func updateDarkMode() {
-        isDarkMode = NSAppearance.current.bestMatch(from: [.darkAqua, .lightAqua]) == .darkAqua
+        if let appearance = NSAppearance.current {
+            isDarkMode = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        } else {
+            isDarkMode = false
+        }
         Logger.log("Dark mode: \(isDarkMode)", category: "DarkModeListener")
     }
 }
