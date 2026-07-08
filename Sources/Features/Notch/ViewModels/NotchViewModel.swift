@@ -17,10 +17,26 @@ final class NotchViewModel: ObservableObject {
 
     let services: ServiceProvider
     private let order: [Activity] = [.media, .calendar, .fileTray, .bluetooth]
+    private var cancellables = Set<AnyCancellable>()
 
     init(services: ServiceProvider) {
         self.services = services
         currentActivity = enabledActivities.first ?? .media
+
+        // Live-sync with Preferences: refresh the dots and make sure the
+        // current activity is still enabled after the user toggles settings.
+        services.preferencesManager.$preferences
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.objectWillChange.send()
+                    let list = self.enabledActivities
+                    if !list.contains(self.currentActivity) {
+                        self.currentActivity = list.first ?? .media
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     var enabledActivities: [Activity] {

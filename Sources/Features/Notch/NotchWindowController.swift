@@ -131,11 +131,15 @@ final class NotchWindowController {
     // MARK: - Services
 
     private func startEnabledServices() {
-        let enabled = services.preferencesManager.preferences.enabledActivities
+        // An empty stored set means "no filter" — mirror the view model's fallback
+        // so a corrupted/empty preference can never silently disable everything.
+        let stored = services.preferencesManager.preferences.enabledActivities
+        let enabled = stored.isEmpty ? Set(Activity.allCases) : stored
+
         if enabled.contains(.media) { services.mediaService.start() }
         if enabled.contains(.calendar) { services.calendarService.start() }
         if enabled.contains(.fileTray) { services.fileTrayService.start() }
         if enabled.contains(.bluetooth) { services.bluetoothService.start() }
-        Logger.log("Enabled activity services started", category: "Notch")
+        Logger.log("Enabled activity services started: \(enabled.map(\.rawValue).sorted())", category: "Notch")
     }
 }

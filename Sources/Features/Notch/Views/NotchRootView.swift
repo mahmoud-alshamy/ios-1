@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 /// The entire visual application: the notch itself.
 ///
@@ -10,6 +11,8 @@ struct NotchRootView: View {
     @ObservedObject var vm: NotchViewModel
     let geometry: NotchGeometry
     var onOpenPreferences: () -> Void
+
+    @State private var isDropTargeted = false
 
     private var size: CGSize {
         switch vm.state {
@@ -69,6 +72,17 @@ struct NotchRootView: View {
                     Button("Preferences…") { onOpenPreferences() }
                     Divider()
                     Button("Quit DynamicWin") { NSApplication.shared.terminate(nil) }
+                }
+                // Dragging a file over the notch reveals the File Tray; dropping adds it.
+                .onDrop(of: [UTType.fileURL], isTargeted: $isDropTargeted) { providers in
+                    FileDropHandler.handle(providers) { urls in
+                        for url in urls {
+                            try? vm.services.fileTrayService.addFile(url)
+                        }
+                    }
+                }
+                .onChange(of: isDropTargeted) { targeted in
+                    if targeted { vm.switchTo(.fileTray) }
                 }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

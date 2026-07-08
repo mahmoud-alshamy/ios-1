@@ -45,7 +45,8 @@ struct NotchGeometry {
         let idle = CGSize(width: notchWidth, height: notchHeight)
         // Reveal states wrap the hardware notch: wider on both sides, below the bezel.
         let peek = CGSize(width: notchWidth + 104, height: notchHeight + 52)
-        let open = CGSize(width: max(620, notchWidth + 360), height: notchHeight + 178)
+        // Tall enough for the media panel (artwork + info + controls) without clipping.
+        let open = CGSize(width: max(620, notchWidth + 360), height: notchHeight + 330)
 
         // Fixed window big enough for the open state plus shadow / corner flares.
         let windowSize = CGSize(

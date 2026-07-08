@@ -2,7 +2,11 @@ import AppKit
 
 /// Lightweight logic verification that runs without XCTest (unavailable under
 /// Command Line Tools). Launch with `--self-test` to exercise the notch state
-/// machine and geometry, print PASS/FAIL per case, and exit with the failure count.
+/// machine, activity navigation, preferences sync, file-tray logic, and
+/// geometry, printing PASS/FAIL per case and exiting with the failure count.
+///
+/// IMPORTANT: this runs against the real UserDefaults, so it snapshots the
+/// user's preferences at the start and restores them before exiting.
 enum SelfTest {
     @MainActor
     static func run() -> Int {
@@ -11,9 +15,19 @@ enum SelfTest {
             print("\(condition ? "PASS" : "FAIL")  \(name)")
             if !condition { failures += 1 }
         }
+        /// Drains main-queue work scheduled by services / Task { @MainActor }.
+        func pump(_ seconds: TimeInterval = 0.2) {
+            RunLoop.main.run(until: Date().addingTimeInterval(seconds))
+        }
 
         let services = DefaultServiceProvider()
         services.preferencesManager.loadPreferences()
+        let originalPreferences = services.preferencesManager.preferences
+        defer {
+            // Never leave test values in the user's real preferences.
+            services.preferencesManager.updatePreferences { $0 = originalPreferences }
+        }
+
         services.preferencesManager.updatePreferences {
             $0.enabledActivities = [.media, .calendar, .fileTray, .bluetooth]
         }
@@ -56,14 +70,35 @@ enum SelfTest {
         check("switchTo sets activity", vm.currentActivity == .bluetooth)
         check("switchTo opens the panel", vm.state == .open)
 
-        // MARK: Enabled-activity filtering
+        // MARK: Preferences live-sync
         services.preferencesManager.updatePreferences {
             $0.enabledActivities = [.media, .fileTray]
         }
+        pump()
         check("enabled filter respects preferences", vm.enabledActivities == [.media, .fileTray])
+        check("disabling the current activity falls back to first enabled", vm.currentActivity == .media)
 
         services.preferencesManager.updatePreferences { $0.enabledActivities = [] }
+        pump()
         check("empty preferences falls back to all activities", vm.enabledActivities.count == 4)
+
+        // MARK: File tray logic (add / duplicate / remove)
+        let tray = services.fileTrayService
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent("dynamicwin-selftest-\(ProcessInfo.processInfo.processIdentifier).txt")
+        try? "selftest".write(to: tmp, atomically: true, encoding: .utf8)
+
+        try? tray.addFile(tmp)
+        pump()
+        check("file tray: dropped file is stored", tray.items.contains { $0.url == tmp })
+        check("file tray: duplicate add is rejected", (try? tray.addFile(tmp)) == nil)
+
+        if let item = tray.items.first(where: { $0.url == tmp }) {
+            try? tray.removeFile(item)
+            pump()
+        }
+        check("file tray: remove deletes the item", !tray.items.contains { $0.url == tmp })
+        try? FileManager.default.removeItem(at: tmp)
 
         // MARK: Geometry
         let geo = NotchGeometry.current(for: nil)
@@ -75,7 +110,7 @@ enum SelfTest {
               geo.windowSize.width >= geo.open.width && geo.windowSize.height >= geo.open.height)
 
         print(failures == 0
-              ? "\n✅ ALL \(0) FAILURES — logic OK"
+              ? "\n✅ ALL CHECKS PASSED — logic OK"
               : "\n❌ \(failures) FAILURE(S)")
         return failures
     }

@@ -1,7 +1,9 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct FileTrayExpandedView: View {
     @ObservedObject var viewModel: FileTrayViewModel
+    @State private var isDropTargeted = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -61,6 +63,42 @@ struct FileTrayExpandedView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.accentColor, lineWidth: isDropTargeted ? 2 : 0)
+                .padding(2)
+        )
+        .onDrop(of: [UTType.fileURL], isTargeted: $isDropTargeted) { providers in
+            FileDropHandler.handle(providers) { urls in
+                viewModel.addFiles(urls)
+            }
+        }
+    }
+}
+
+/// Shared decoding of dragged file URLs from NSItemProviders.
+enum FileDropHandler {
+    @discardableResult
+    static func handle(_ providers: [NSItemProvider], completion: @MainActor @escaping ([URL]) -> Void) -> Bool {
+        let type = UTType.fileURL.identifier
+        let matching = providers.filter { $0.hasItemConformingToTypeIdentifier(type) }
+        guard !matching.isEmpty else { return false }
+
+        for provider in matching {
+            provider.loadItem(forTypeIdentifier: type, options: nil) { item, _ in
+                var url: URL?
+                if let data = item as? Data {
+                    url = URL(dataRepresentation: data, relativeTo: nil)
+                } else if let itemURL = item as? URL {
+                    url = itemURL
+                }
+                guard let url, url.isFileURL else { return }
+                Task { @MainActor in
+                    completion([url])
+                }
+            }
+        }
+        return true
     }
 }
 

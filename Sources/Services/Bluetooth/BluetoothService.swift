@@ -83,20 +83,57 @@ class BluetoothService: BackgroundService {
         }
     }
 
-    private func convertIOBluetoothDevice(_ device: IOBluetoothDevice) -> BluetoothDevice? {
+    private func convertIOBluetoothDevice(_ device: IOBluetoothDevice, batteryLevels: [String: Int]) -> BluetoothDevice? {
         guard let name = device.name, let address = device.addressString else {
             return nil
         }
 
         let deviceType = detectDeviceType(name: name, classOfDevice: device.classOfDevice)
+        let battery = device.isConnected() ? batteryLevels[Self.normalizeAddress(address)] : nil
 
         return BluetoothDevice(
             name: name,
             address: address,
             isConnected: device.isConnected(),
-            batteryLevel: nil,
+            batteryLevel: battery,
             deviceType: deviceType
         )
+    }
+
+    // MARK: - Battery (IOKit registry)
+
+    /// Bluetooth HID devices publish "BatteryPercent" in the IO registry.
+    /// Returns a map of normalized device address -> battery percentage.
+    private func batteryLevelsByAddress() -> [String: Int] {
+        var levels: [String: Int] = [:]
+
+        let matching = IOServiceMatching("AppleDeviceManagementHIDEventService")
+        var iterator: io_iterator_t = 0
+        guard IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator) == KERN_SUCCESS else {
+            return levels
+        }
+        defer { IOObjectRelease(iterator) }
+
+        var entry = IOIteratorNext(iterator)
+        while entry != 0 {
+            if let percent = IORegistryEntryCreateCFProperty(
+                    entry, "BatteryPercent" as CFString, kCFAllocatorDefault, 0
+               )?.takeRetainedValue() as? Int,
+               let address = IORegistryEntryCreateCFProperty(
+                    entry, "DeviceAddress" as CFString, kCFAllocatorDefault, 0
+               )?.takeRetainedValue() as? String {
+                levels[Self.normalizeAddress(address)] = min(100, max(0, percent))
+            }
+            IOObjectRelease(entry)
+            entry = IOIteratorNext(iterator)
+        }
+
+        return levels
+    }
+
+    /// IOBluetooth uses "aa-bb-cc-dd-ee-ff", the IO registry "aa:bb:cc:dd:ee:ff".
+    private static func normalizeAddress(_ address: String) -> String {
+        address.lowercased().replacingOccurrences(of: "-", with: ":")
     }
 
     private func detectDeviceType(name: String, classOfDevice: UInt32) -> DeviceType {
