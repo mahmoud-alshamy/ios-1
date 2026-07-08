@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Content revealed on the black notch while hovering (the "programmed notch").
-/// Splits into left/right clusters with a gap in the middle for the camera.
+/// Left: current activity context. Right: icon tab bar — clicking an icon
+/// opens the panel directly on that activity.
 struct NotchCompactView: View {
     @ObservedObject var vm: NotchViewModel
     /// Content must clear the physical notch, so it starts below the bezel line.
@@ -22,17 +23,11 @@ struct NotchCompactView: View {
             }
             .padding(.leading, 16)
 
-            Spacer(minLength: 14)
+            Spacer(minLength: 12)
 
-            // Right cluster — activity indicator dots.
-            HStack(spacing: 5) {
-                ForEach(vm.enabledActivities, id: \.self) { activity in
-                    Circle()
-                        .fill(activity == vm.currentActivity ? Color.white : Color.white.opacity(0.35))
-                        .frame(width: 5, height: 5)
-                }
-            }
-            .padding(.trailing, 16)
+            // Right cluster — tap an icon to open that activity immediately.
+            ActivityTabBar(vm: vm, compact: true)
+                .padding(.trailing, 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, topInset)
