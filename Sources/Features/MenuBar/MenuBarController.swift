@@ -67,6 +67,7 @@ class MenuBarController: NSObject, ObservableObject {
     private func startBackgroundServices() {
         serviceProvider.mediaService.start()
         serviceProvider.calendarService.start()
+        serviceProvider.fileTrayService.start()
         Logger.log("Background services started", category: "MenuBar")
     }
 

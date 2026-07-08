@@ -18,17 +18,9 @@ struct ActivityContentView: View {
                 )
 
             case .fileTray:
-                VStack(spacing: 12) {
-                    Image(systemName: "tray")
-                        .font(.system(size: 36))
-                        .foregroundColor(.secondary)
-                    Text("File Tray")
-                        .font(.headline)
-                    Text("Phase 6: Coming Soon")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                FileTrayExpandedView(
+                    viewModel: FileTrayViewModel(service: services.fileTrayService)
+                )
 
             case .bluetooth:
                 VStack(spacing: 12) {
