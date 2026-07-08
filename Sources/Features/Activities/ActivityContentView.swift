@@ -13,17 +13,9 @@ struct ActivityContentView: View {
                 )
 
             case .calendar:
-                VStack(spacing: 12) {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 36))
-                        .foregroundColor(.secondary)
-                    Text("Calendar")
-                        .font(.headline)
-                    Text("Phase 4: Coming Soon")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                CalendarExpandedView(
+                    viewModel: CalendarViewModel(service: services.calendarService)
+                )
 
             case .fileTray:
                 VStack(spacing: 12) {

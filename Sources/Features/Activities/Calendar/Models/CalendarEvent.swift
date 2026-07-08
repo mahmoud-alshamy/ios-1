@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 
 struct CalendarEvent: Identifiable {
-    let id: UUID = UUID()
+    let id: String
     let title: String
     let startDate: Date
     let endDate: Date
@@ -12,12 +12,29 @@ struct CalendarEvent: Identifiable {
     let isAllDay: Bool
     let attendees: [String]
 
-    init(title: String, startDate: Date, endDate: Date, calendar: String, color: NSColor = .systemBlue, location: String? = nil, isAllDay: Bool = false, attendees: [String] = []) {
+    init(id: String = UUID().uuidString, title: String, startDate: Date, endDate: Date, calendar: String, color: NSColor? = nil, location: String? = nil, isAllDay: Bool = false, attendees: [String] = []) {
+        self.id = id
         self.title = title
         self.startDate = startDate
         self.endDate = endDate
         self.calendar = calendar
-        self.color = color
+        self.color = color ?? .systemBlue
+        self.location = location
+        self.isAllDay = isAllDay
+        self.attendees = attendees
+    }
+
+    init(id: String = UUID().uuidString, title: String, startDate: Date, endDate: Date, calendar: String, calendarColor: CGColor?, location: String? = nil, isAllDay: Bool = false, attendees: [String] = []) {
+        self.id = id
+        self.title = title
+        self.startDate = startDate
+        self.endDate = endDate
+        self.calendar = calendar
+        if let cgColor = calendarColor {
+            self.color = NSColor(cgColor: cgColor) ?? .systemBlue
+        } else {
+            self.color = .systemBlue
+        }
         self.location = location
         self.isAllDay = isAllDay
         self.attendees = attendees
