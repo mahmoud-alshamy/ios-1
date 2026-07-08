@@ -13,7 +13,8 @@ struct NotchGeometry {
     /// Whether the target display actually has a hardware notch.
     let hasHardwareNotch: Bool
 
-    let closed: CGSize
+    /// Camouflage size — matches the hardware notch so the overlay is invisible while idle.
+    let idle: CGSize
     let peek: CGSize
     let open: CGSize
     let windowSize: CGSize
@@ -40,9 +41,10 @@ struct NotchGeometry {
         let notchHeight = hasNotch ? safeTop : 32
         let notchWidth = measuredWidth
 
-        // Wrap the hardware notch: wider on both sides, extending below the bezel.
-        let closed = CGSize(width: notchWidth + 44, height: notchHeight + 34)
-        let peek = CGSize(width: notchWidth + 104, height: notchHeight + 48)
+        // Idle exactly matches the hardware notch so the overlay disappears into it.
+        let idle = CGSize(width: notchWidth, height: notchHeight)
+        // Reveal states wrap the hardware notch: wider on both sides, below the bezel.
+        let peek = CGSize(width: notchWidth + 104, height: notchHeight + 52)
         let open = CGSize(width: max(620, notchWidth + 360), height: notchHeight + 178)
 
         // Fixed window big enough for the open state plus shadow / corner flares.
@@ -55,7 +57,7 @@ struct NotchGeometry {
             notchWidth: notchWidth,
             notchHeight: notchHeight,
             hasHardwareNotch: hasNotch,
-            closed: closed,
+            idle: idle,
             peek: peek,
             open: open,
             windowSize: windowSize,

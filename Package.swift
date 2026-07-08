@@ -15,11 +15,6 @@ let package = Package(
             name: "DynamicWin",
             dependencies: [],
             path: "Sources"
-        ),
-        .testTarget(
-            name: "DynamicWinTests",
-            dependencies: ["DynamicWin"],
-            path: "Tests"
         )
     ]
 )

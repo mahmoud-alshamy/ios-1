@@ -80,6 +80,8 @@ final class NotchWindowController {
 
     /// Keep the click-through region in sync with the current notch bounds.
     private func updateInteractiveFrame() {
+        // While idle/hover the hover target spans the peek region so the mouse
+        // reliably reveals the notch; while open it covers the full panel.
         let size: CGSize = vm.state == .open ? geometry.open : geometry.peek
         let windowSize = geometry.windowSize
         let inset: CGFloat = 8

@@ -3,12 +3,16 @@ import Combine
 
 @MainActor
 final class NotchViewModel: ObservableObject {
+    /// idle  — camouflaged over the hardware notch (invisible).
+    /// hover — mouse is over the notch; reveal the compact programmed notch.
+    /// open  — full panel with the current activity.
     enum State: Equatable {
-        case closed
+        case idle
+        case hover
         case open
     }
 
-    @Published var state: State = .closed
+    @Published var state: State = .idle
     @Published var currentActivity: Activity = .media
 
     let services: ServiceProvider
@@ -27,19 +31,32 @@ final class NotchViewModel: ObservableObject {
 
     var isOpen: Bool { state == .open }
 
-    func toggle() {
-        state = (state == .open) ? .closed : .open
+    // MARK: - Hover (reveal / conceal)
+
+    func hoverBegan() {
+        if state == .idle { state = .hover }
     }
 
+    func hoverEnded() {
+        // Only a peeking notch retracts; an opened panel stays open.
+        if state == .hover { state = .idle }
+    }
+
+    // MARK: - Open / close
+
     func open() {
-        guard state != .open else { return }
         state = .open
     }
 
     func close() {
-        guard state != .closed else { return }
-        state = .closed
+        state = .idle
     }
+
+    func toggle() {
+        state = (state == .open) ? .idle : .open
+    }
+
+    // MARK: - Activity navigation
 
     func switchTo(_ activity: Activity) {
         currentActivity = activity
