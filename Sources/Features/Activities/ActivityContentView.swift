@@ -23,17 +23,9 @@ struct ActivityContentView: View {
                 )
 
             case .bluetooth:
-                VStack(spacing: 12) {
-                    Image(systemName: "airplayaudio")
-                        .font(.system(size: 36))
-                        .foregroundColor(.secondary)
-                    Text("Bluetooth")
-                        .font(.headline)
-                    Text("Phase 7: Coming Soon")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                BluetoothExpandedView(
+                    viewModel: BluetoothViewModel(service: services.bluetoothService)
+                )
             }
         }
     }
