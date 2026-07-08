@@ -4,14 +4,15 @@ import AppKit
 /// The entire visual application: the notch itself.
 struct NotchRootView: View {
     @ObservedObject var vm: NotchViewModel
+    let geometry: NotchGeometry
     var onOpenPreferences: () -> Void
 
     @State private var hovering = false
 
     private var size: CGSize {
         switch vm.state {
-        case .open: return NotchMetrics.open
-        case .closed: return hovering ? NotchMetrics.peek : NotchMetrics.closed
+        case .open: return geometry.open
+        case .closed: return hovering ? geometry.peek : geometry.closed
         }
     }
 
@@ -30,9 +31,9 @@ struct NotchRootView: View {
                 .overlay(
                     Group {
                         if vm.state == .open {
-                            NotchExpandedView(vm: vm)
+                            NotchExpandedView(vm: vm, topInset: geometry.contentTopInset)
                         } else {
-                            NotchCompactView(vm: vm, hovering: hovering)
+                            NotchCompactView(vm: vm, hovering: hovering, topInset: geometry.contentTopInset)
                         }
                     }
                     .clipShape(shape)

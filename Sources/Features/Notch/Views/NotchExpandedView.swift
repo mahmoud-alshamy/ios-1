@@ -3,12 +3,14 @@ import SwiftUI
 /// Content rendered when the notch is opened into a full panel.
 struct NotchExpandedView: View {
     @ObservedObject var vm: NotchViewModel
+    /// Header must clear the physical notch, so it starts below the bezel line.
+    var topInset: CGFloat
 
     var body: some View {
         VStack(spacing: 0) {
             header
                 .padding(.horizontal, 16)
-                .padding(.top, 10)
+                .padding(.top, max(8, topInset - 4))
                 .padding(.bottom, 8)
 
             ActivityContentView(

@@ -56,16 +56,3 @@ struct NotchShape: Shape {
         return path
     }
 }
-
-/// Fixed geometry for the notch across its states.
-enum NotchMetrics {
-    /// Idle — approximates the physical MacBook notch.
-    static let closed = CGSize(width: 210, height: 32)
-    /// Hover peek — a subtle grow to signal interactivity.
-    static let peek = CGSize(width: 250, height: 42)
-    /// Fully open panel hanging below the top edge.
-    static let open = CGSize(width: 600, height: 200)
-
-    /// The window is fixed at the open bounding box plus room for shadow/flares.
-    static let windowSize = CGSize(width: 760, height: 320)
-}

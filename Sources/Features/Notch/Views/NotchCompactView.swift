@@ -5,6 +5,8 @@ import SwiftUI
 struct NotchCompactView: View {
     @ObservedObject var vm: NotchViewModel
     var hovering: Bool
+    /// Content must clear the physical notch, so it starts below the bezel line.
+    var topInset: CGFloat
 
     var body: some View {
         HStack(spacing: 0) {
@@ -37,5 +39,6 @@ struct NotchCompactView: View {
             .padding(.trailing, 14)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.top, topInset)
     }
 }

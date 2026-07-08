@@ -10,6 +10,7 @@ final class NotchWindowController {
     private let container: NotchContainerView
     private let vm: NotchViewModel
     private let services: ServiceProvider
+    private var geometry: NotchGeometry
 
     private var cancellables = Set<AnyCancellable>()
     private var globalClickMonitor: Any?
@@ -17,14 +18,15 @@ final class NotchWindowController {
     init(serviceProvider: ServiceProvider, onOpenPreferences: @escaping () -> Void) {
         self.services = serviceProvider
         self.vm = NotchViewModel(services: serviceProvider)
+        self.geometry = NotchGeometry.current(for: NotchWindowController.notchScreen())
 
-        let windowSize = NotchMetrics.windowSize
+        let windowSize = geometry.windowSize
         let rect = NSRect(origin: .zero, size: windowSize)
 
         window = NotchWindow(contentRect: rect)
         container = NotchContainerView(frame: rect)
 
-        let root = NotchRootView(vm: vm, onOpenPreferences: onOpenPreferences)
+        let root = NotchRootView(vm: vm, geometry: geometry, onOpenPreferences: onOpenPreferences)
         let hosting = NSHostingView(rootView: root)
         hosting.frame = container.bounds
         hosting.autoresizingMask = [.width, .height]
@@ -58,15 +60,15 @@ final class NotchWindowController {
     // MARK: - Positioning
 
     /// The display that owns the notch (or the primary display as a fallback).
-    private var targetScreen: NSScreen? {
+    private static func notchScreen() -> NSScreen? {
         NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 })
             ?? NSScreen.main
             ?? NSScreen.screens.first
     }
 
     private func positionWindow() {
-        guard let screen = targetScreen else { return }
-        let size = NotchMetrics.windowSize
+        guard let screen = NotchWindowController.notchScreen() else { return }
+        let size = geometry.windowSize
         let origin = NSPoint(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.maxY - size.height
@@ -78,8 +80,8 @@ final class NotchWindowController {
 
     /// Keep the click-through region in sync with the current notch bounds.
     private func updateInteractiveFrame() {
-        let size: CGSize = vm.state == .open ? NotchMetrics.open : NotchMetrics.peek
-        let windowSize = NotchMetrics.windowSize
+        let size: CGSize = vm.state == .open ? geometry.open : geometry.peek
+        let windowSize = geometry.windowSize
         let inset: CGFloat = 8
         let rect = CGRect(
             x: (windowSize.width - size.width) / 2 - inset,
