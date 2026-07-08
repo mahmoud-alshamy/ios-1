@@ -1,0 +1,37 @@
+# Build
+build/
+DerivedData/
+.build/
+*.swiftpm
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.perspectivev3
+*.xcworkspace
+xcuserdata/
+*.xcodeproj/xcshareddata/
+*.playground
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temp
+*.tmp
+*.bak
+BASH_EOF
+echo "✓ Documentation files created"
