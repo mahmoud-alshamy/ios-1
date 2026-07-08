@@ -5,50 +5,25 @@ import Combine
 class AppDelegate: NSObject, NSApplicationDelegate {
     let serviceProvider: DefaultServiceProvider = .init()
     private var appCoordinator: AppCoordinator?
-    private var menuBarController: MenuBarController?
-    private var menuBarViewModel: MenuBarViewModel?
+    private var notchController: NotchWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.log("Application launched", category: "AppDelegate")
 
+        // The notch is the entire app: no dock icon, no menu bar presence.
+        NSApp.setActivationPolicy(.accessory)
+
         appCoordinator = AppCoordinator(serviceProvider: serviceProvider)
         appCoordinator?.start()
 
-        setupMenuBar()
-        setupApplicationMenu()
-    }
-
-    private func setupApplicationMenu() {
-        let mainMenu = NSMenu()
-        let appMenu = NSMenu()
-
-        let prefsItem = NSMenuItem(
-            title: "Preferences...",
-            action: #selector(showPreferences),
-            keyEquivalent: ","
+        notchController = NotchWindowController(
+            serviceProvider: serviceProvider,
+            onOpenPreferences: { [weak self] in
+                self?.appCoordinator?.showPreferences()
+            }
         )
-        prefsItem.target = self
-        appMenu.addItem(prefsItem)
 
-        appMenu.addItem(NSMenuItem.separator())
-
-        let quitItem = NSMenuItem(
-            title: "Quit DynamicWin",
-            action: #selector(NSApplication.terminate(_:)),
-            keyEquivalent: "q"
-        )
-        appMenu.addItem(quitItem)
-
-        let appMenuItem = NSMenuItem()
-        appMenuItem.submenu = appMenu
-        mainMenu.addItem(appMenuItem)
-
-        NSApplication.shared.mainMenu = mainMenu
-    }
-
-    @objc
-    private func showPreferences() {
-        appCoordinator?.showPreferences()
+        Logger.log("Notch initialized", category: "AppDelegate")
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -58,19 +33,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         Logger.log("Application terminating", category: "AppDelegate")
         appCoordinator?.stop()
-    }
-
-    private func setupMenuBar() {
-        menuBarViewModel = MenuBarViewModel(services: serviceProvider)
-
-        guard let viewModel = menuBarViewModel else { return }
-
-        menuBarController = MenuBarController(
-            viewModel: viewModel,
-            screenMonitor: serviceProvider.screenMonitor,
-            serviceProvider: serviceProvider
-        )
-
-        Logger.log("Menu bar initialized", category: "AppDelegate")
     }
 }
