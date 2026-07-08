@@ -15,6 +15,40 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         appCoordinator?.start()
 
         setupMenuBar()
+        setupApplicationMenu()
+    }
+
+    private func setupApplicationMenu() {
+        let mainMenu = NSMenu()
+        let appMenu = NSMenu()
+
+        let prefsItem = NSMenuItem(
+            title: "Preferences...",
+            action: #selector(showPreferences),
+            keyEquivalent: ","
+        )
+        prefsItem.target = self
+        appMenu.addItem(prefsItem)
+
+        appMenu.addItem(NSMenuItem.separator())
+
+        let quitItem = NSMenuItem(
+            title: "Quit DynamicWin",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        )
+        appMenu.addItem(quitItem)
+
+        let appMenuItem = NSMenuItem()
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+
+        NSApplication.shared.mainMenu = mainMenu
+    }
+
+    @objc
+    private func showPreferences() {
+        appCoordinator?.showPreferences()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

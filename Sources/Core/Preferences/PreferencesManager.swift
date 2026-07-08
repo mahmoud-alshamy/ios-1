@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-class PreferencesManager {
+class PreferencesManager: ObservableObject {
     private static let preferencesKey = "com.dynamicwin.preferences"
     private let userDefaults: UserDefaults
 

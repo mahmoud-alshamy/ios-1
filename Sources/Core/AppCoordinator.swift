@@ -3,9 +3,20 @@ import Foundation
 class AppCoordinator {
     private let serviceProvider: ServiceProvider
     private var backgroundServices: [BackgroundService] = []
+    private var preferencesWindowController: PreferencesWindowController?
 
     init(serviceProvider: ServiceProvider) {
         self.serviceProvider = serviceProvider
+    }
+
+    @MainActor
+    func showPreferences() {
+        if preferencesWindowController == nil {
+            preferencesWindowController = PreferencesWindowController(
+                preferencesManager: serviceProvider.preferencesManager
+            )
+        }
+        preferencesWindowController?.showWindow()
     }
 
     func start() {
