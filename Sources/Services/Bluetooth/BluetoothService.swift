@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import IOBluetooth
+import IOKit
 
 enum BluetoothError: Error, LocalizedError {
     case bluetoothUnavailable
@@ -60,10 +61,11 @@ class BluetoothService: BackgroundService {
             }
 
             var devices: [BluetoothDevice] = []
+            let batteryLevels = self.batteryLevelsByAddress()
 
             if let pairedDevices = IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice] {
                 for device in pairedDevices {
-                    if let connectedDevice = self.convertIOBluetoothDevice(device) {
+                    if let connectedDevice = self.convertIOBluetoothDevice(device, batteryLevels: batteryLevels) {
                         devices.append(connectedDevice)
                     }
                 }
