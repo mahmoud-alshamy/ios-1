@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PanelContentView: View {
     @ObservedObject var viewModel: MenuBarViewModel
+    let serviceProvider: ServiceProvider
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,25 +34,15 @@ struct PanelContentView: View {
 
             Divider()
 
-            // Activity Content (placeholder)
-            VStack {
-                Image(systemName: viewModel.currentActivity.systemImage)
-                    .font(.system(size: 36))
-                    .foregroundColor(.secondary)
-
-                Text(viewModel.currentActivity.displayName)
-                    .font(.headline)
-
-                Text("Phase 2: Menu Bar System")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(nsColor: NSColor.windowBackgroundColor))
+            // Activity Content Router
+            ActivityContentView(
+                activity: viewModel.currentActivity,
+                services: serviceProvider
+            )
 
             Divider()
 
-            // Footer with close button
+            // Footer with navigation
             HStack {
                 Button(action: { viewModel.previousActivity() }) {
                     Image(systemName: "chevron.left")

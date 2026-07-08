@@ -33,7 +33,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menuBarController = MenuBarController(
             viewModel: viewModel,
-            screenMonitor: serviceProvider.screenMonitor
+            screenMonitor: serviceProvider.screenMonitor,
+            serviceProvider: serviceProvider
         )
 
         Logger.log("Menu bar initialized", category: "AppDelegate")

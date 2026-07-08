@@ -10,18 +10,22 @@ class MenuBarController: NSObject, ObservableObject {
     private var floatingPanel: FloatingPanelWindow?
     private let viewModel: MenuBarViewModel
     private let screenMonitor: ScreenMonitor
+    private let serviceProvider: ServiceProvider
     private var cancellables = Set<AnyCancellable>()
 
     init(
         viewModel: MenuBarViewModel,
-        screenMonitor: ScreenMonitor
+        screenMonitor: ScreenMonitor,
+        serviceProvider: ServiceProvider
     ) {
         self.viewModel = viewModel
         self.screenMonitor = screenMonitor
+        self.serviceProvider = serviceProvider
         super.init()
 
         setupStatusItem()
         observeViewState()
+        startBackgroundServices()
     }
 
     private func setupStatusItem() {
@@ -58,6 +62,11 @@ class MenuBarController: NSObject, ObservableObject {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    private func startBackgroundServices() {
+        serviceProvider.mediaService.start()
+        Logger.log("Background services started", category: "MenuBar")
     }
 
     @objc
@@ -111,7 +120,7 @@ class MenuBarController: NSObject, ObservableObject {
             screenMonitor: screenMonitor
         )
 
-        let panelView = PanelContentView(viewModel: viewModel)
+        let panelView = PanelContentView(viewModel: viewModel, serviceProvider: serviceProvider)
 
         floatingPanel = FloatingPanelWindow(
             rootView: panelView,
