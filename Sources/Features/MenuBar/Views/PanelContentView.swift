@@ -39,6 +39,8 @@ struct PanelContentView: View {
                 activity: viewModel.currentActivity,
                 services: serviceProvider
             )
+            .slideAndFade(true, direction: .top)
+            .id(viewModel.currentActivity)
 
             Divider()
 
